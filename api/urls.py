@@ -1,10 +1,10 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import PolicyViewSet
+
+router = DefaultRouter()
+router.register(r'policies', PolicyViewSet)
 
 urlpatterns = [
-    path('policies', views.getPolicies),
-    path('get-policy/<int:id>', views.getPolicy),
-    path('add-policy', views.addPolicy),
-    path('update-policy/<int:id>', views.updatePolicy),
-    path('delete-policy/<int:id>', views.deletePolicy)
+    path('', include(router.urls)),
 ]

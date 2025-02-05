@@ -1,59 +1,50 @@
-from rest_framework.decorators import api_view
+from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework import status
 from .models import Policy
 from .serializers import PolicySerializer
-from rest_framework import status
 
 
-@api_view(["GET"])
-def getPolicies(request):
-    policies = Policy.objects.all()
-    serializer = PolicySerializer(policies, many=True)
-    return Response(serializer.data)
+class PolicyViewSet(viewsets.ModelViewSet):
+    queryset = Policy.objects.all()
+    serializer_class = PolicySerializer
 
-
-@api_view(["GET"])
-def getPolicy(request, id):
-    try:
-        policy = Policy.objects.get(pk=id)
-        serializer = PolicySerializer(policy, many=True)
+    def list(self, request):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-    except:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
 
+    def retrieve(self, request, pk=None):
+        try:
+            policy = self.get_object()
+            serializer = self.get_serializer(policy)
+            return Response(serializer.data)
+        except Policy.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-@api_view(["POST"])
-def addPolicy(request):
-    serializer = PolicySerializer(data=request.data)
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def update(self, request, pk=None, **kwargs):
+        try:
+            policy = self.get_object()
+        except Policy.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(policy, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-@api_view(["PUT"])
-def updatePolicy(request, id):
-    try:
-        policy = Policy.objects.get(pk=id)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    serializer = PolicySerializer(policy, data=request.data)
-
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-
-    return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["DELETE"])
-def deletePolicy(request, id):
-    try:
-        policy = Policy.objects.get(pk=id)
-        policy.delete()
-        return Response(status=status.HTTP_202_ACCEPTED)
-    except:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    def destroy(self, request, pk=None):
+        try:
+            policy = self.get_object()
+            policy.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Policy.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
