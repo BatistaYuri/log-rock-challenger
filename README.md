@@ -3,7 +3,7 @@ Goal: Build a REST API for managing insurance policies.
 
 ## Installation and configuration
 
-Este projeto foi desenvolvido utilizando [Python 3.13](https://www.python.org/downloads/)
+This project was developed using [Python 3.13](https://www.python.org/downloads/)
 
 ### Clone repository
 
