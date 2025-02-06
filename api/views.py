@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.generics import get_object_or_404
 from .models import Policy
 from .serializers import PolicySerializer
 
@@ -10,41 +11,28 @@ class PolicyViewSet(viewsets.ModelViewSet):
     serializer_class = PolicySerializer
 
     def list(self, request):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(self.queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        try:
-            policy = self.get_object()
-            serializer = self.get_serializer(policy)
-            return Response(serializer.data)
-        except Policy.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        policy = get_object_or_404(self.queryset, pk=pk)
+        serializer = self.get_serializer(policy)
+        return Response(serializer.data)
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None, **kwargs):
-        try:
-            policy = self.get_object()
-        except Policy.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        serializer = self.get_serializer(policy, data=request.data, partial=True)
-        if serializer.is_valid():
+        policy = get_object_or_404(self.queryset, pk=pk)
+        serializer = self.get_serializer(policy, data=request.data)
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):
-        try:
-            policy = self.get_object()
-            policy.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Policy.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        policy = get_object_or_404(self.queryset, pk=pk)
+        policy.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
