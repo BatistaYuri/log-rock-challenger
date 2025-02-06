@@ -46,5 +46,5 @@ http://127.0.0.1:8000/api/policies/${policy_id}
 ### Test
 
 ```
-python manage.py test
+python manage.py test api.tests
 ```
