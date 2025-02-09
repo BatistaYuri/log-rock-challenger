@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
-from ..models import Policy
+from ..models import Policy, PolicyType
 from datetime import date
 
 
@@ -14,7 +14,7 @@ class PolicyTests(APITestCase):
         url = "/api/policies/"
         data = {
             "customer_name": "Yuri",
-            "policy_type": "home",
+            "policy_type": PolicyType.HOME,
             "expiry_date": str(date.today()),
         }
 
@@ -27,7 +27,7 @@ class PolicyTests(APITestCase):
         url = "/api/policies/"
         data = {
             "customer_name": "Yuri",
-            "policy_type": "home",
+            "policy_type": PolicyType.HOME,
             "expiry_date": str(date(2020, 1, 1)),
         }
 
@@ -58,19 +58,19 @@ class PolicyTests(APITestCase):
         url = f"/api/policies/{self.valid_policy.policy_id}/"
         data = {
             "customer_name": "Yuri",
-            "policy_type": "home",
+            "policy_type": PolicyType.HOME,
             "expiry_date": str(date.today()),
         }
 
         response = self.client.patch(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["customer_name"], data["customer_name"])
 
     def test_update_policy_not_found(self):
         url = "/api/policies/99999/"
         data = {
             "customer_name": "Yuri",
-            "policy_type": "home",
+            "policy_type": PolicyType.HOME,
             "expiry_date": str(date.today()),
         }
 
